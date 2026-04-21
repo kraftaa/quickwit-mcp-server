@@ -1,6 +1,6 @@
 # quickwit-mcp
 
-MCP server exposing a curated surface of the [Quickwit](https://quickwit.io) search REST API to LLM coding agents (Claude, Opencode). Talks Streamable HTTP transport.
+MCP server exposing a curated surface of the [Quickwit](https://quickwit.io) search REST API to LLM agents over Streamable HTTP transport.
 
 ## Tools
 
@@ -41,9 +41,35 @@ QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index your-index-id --
 Use the published image and run it next to Quickwit with `QUICKWIT_URL` pointing at your searcher.
 
 Image:
-- `ghcr.io/kraftaa/quickwit-mcp-server:v0.1.0`
+- `ghcr.io/kraftaa/quickwit-mcp-server:<tag>`
 
 One server talks to one Quickwit cluster. If you have multiple clusters (e.g. separate logs and traces), run one instance per cluster with different `QUICKWIT_URL` values.
+
+## Using from an MCP client
+
+Example MCP client config:
+
+```json
+{
+  "mcp": {
+    "quickwit_cluster_a": {
+      "type": "remote",
+      "url": "http://<mcp-service-name>.<mcp-namespace>.svc.cluster.local:3020/mcp",
+      "enabled": true
+    },
+    "quickwit_cluster_b": {
+      "type": "remote",
+      "url": "http://<mcp-service-name>.<mcp-namespace>.svc.cluster.local:3020/mcp",
+      "enabled": true
+    }
+  }
+}
+```
+
+Then ask your client to call tools like:
+- `list_indexes`
+- `describe_index`
+- `search` with `start_timestamp` / `end_timestamp` for time windows (e.g. last 5 minutes, last 24 hours)
 
 ## Quickwit version support
 
@@ -51,3 +77,7 @@ Written against Quickwit 0.8.x REST API and cross-checked against current 0.9 ma
 - Core `list_indexes`, `describe_index`, and `search` paths remain stable.
 - `/{index}/search/stream` is removed in 0.9 and intentionally not exposed here.
 - `parse-query` and `search-plan` are exposed as optional preflight tools.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
