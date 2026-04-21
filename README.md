@@ -36,33 +36,12 @@ Optional local smoke test (direct Quickwit calls via the same Python request cod
 QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index your-index-id --query '*'
 ```
 
-## Docker
-
-```bash
-docker build -t quickwit-mcp:0.1.0 .
-docker run --rm -p 3020:3020 -e QUICKWIT_URL=http://host.docker.internal:7280 quickwit-mcp:0.1.0
-```
-
 ## Deploying
 
-Build and push the image to any registry, then run it next to Quickwit with `QUICKWIT_URL` pointing at your searcher.
+Use the published image and run it next to Quickwit with `QUICKWIT_URL` pointing at your searcher.
 
-```bash
-docker build -t quickwit-mcp-server:0.1.0 .
-docker tag quickwit-mcp-server:0.1.0 <your-registry>/quickwit-mcp-server:0.1.0
-docker push <your-registry>/quickwit-mcp-server:0.1.0
-```
-
-GitHub Actions is configured to publish to GHCR on tag push (`v*`) using:
-- image name: `ghcr.io/<owner>/<repo>`
-- platforms: `linux/amd64`, `linux/arm64`
-
-Example:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+Image:
+- `ghcr.io/kraftaa/quickwit-mcp-server:v0.1.0`
 
 One server talks to one Quickwit cluster. If you have multiple clusters (e.g. separate logs and traces), run one instance per cluster with different `QUICKWIT_URL` values.
 
