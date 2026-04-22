@@ -41,9 +41,36 @@ QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index your-index-id --
 Use the published image and run it next to Quickwit with `QUICKWIT_URL` pointing at your searcher.
 
 Image:
-- `ghcr.io/kraftaa/quickwit-mcp-server:<tag>`
+- `ghcr.io/kraftaa/quickwit-mcp-server:v0.1.0`
 
 One server talks to one Quickwit cluster. If you have multiple clusters (e.g. separate logs and traces), run one instance per cluster with different `QUICKWIT_URL` values.
+
+## Kubernetes quickstart
+
+See the ready-to-apply examples in [`kube/`](kube/):
+- `kube/namespace.yaml`
+- `kube/quickwit-mcp-single.yaml`
+- `kube/quickwit-mcp-logs.yaml`
+- `kube/quickwit-mcp-tracing.yaml`
+- `kube/README.md`
+
+Apply (single cluster):
+
+```bash
+kubectl apply -f kube/namespace.yaml
+kubectl apply -f kube/quickwit-mcp-single.yaml
+kubectl -n mcp rollout status deploy/quickwit-mcp
+```
+
+Apply (logs + tracing):
+
+```bash
+kubectl apply -f kube/namespace.yaml
+kubectl apply -f kube/quickwit-mcp-logs.yaml
+kubectl apply -f kube/quickwit-mcp-tracing.yaml
+kubectl -n mcp rollout status deploy/quickwit-logs-mcp-server
+kubectl -n mcp rollout status deploy/quickwit-tracing-mcp-server
+```
 
 ## Using from an MCP client
 

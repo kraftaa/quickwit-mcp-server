@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quickwit-tracing-mcp-server
+  namespace: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quickwit-tracing-mcp-server
+  template:
+    metadata:
+      labels:
+        app: quickwit-tracing-mcp-server
+    spec:
+      containers:
+        - name: quickwit-mcp
+          image: ghcr.io/kraftaa/quickwit-mcp-server:<tag>
+          ports:
+            - containerPort: 3020
+          env:
+            - name: QUICKWIT_URL
+              value: http://<quickwit-tracing-searcher-service>.<quickwit-namespace>.svc.cluster.local:7280
+            - name: QUICKWIT_HTTP_TIMEOUT
+              value: "30"
+            - name: MCP_HOST
+              value: "0.0.0.0"
+            - name: MCP_PORT
+              value: "3020"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quickwit-tracing-mcp-server
+  namespace: mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: quickwit-tracing-mcp-server
+  ports:
+    - name: http
+      port: 3020
+      targetPort: 3020
+      protocol: TCP
