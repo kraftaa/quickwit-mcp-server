@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: quickwit-mcp
-          image: ghcr.io/kraftaa/quickwit-mcp-server:v0.1.0
+          image: ghcr.io/kraftaa/quickwit-mcp-server:<tag>
           ports:
             - containerPort: 3020
           env:
