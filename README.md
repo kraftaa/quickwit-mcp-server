@@ -44,7 +44,11 @@ QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index your-index-id --
 Use the published image and run it next to Quickwit with `QUICKWIT_URL` pointing at your searcher.
 
 Image:
-- `ghcr.io/kraftaa/quickwit-mcp-server:v0.1.0`
+- `ghcr.io/kraftaa/quickwit-mcp-server:<tag>`
+
+Release automation:
+- GitHub Actions publishes container images to GHCR on tag push (`v*`).
+- GitHub Actions publishes package releases to PyPI on tag push (`v*`) via Trusted Publisher.
 
 One server talks to one Quickwit cluster. If you have multiple clusters (e.g. separate logs and traces), run one instance per cluster with different `QUICKWIT_URL` values.
 
