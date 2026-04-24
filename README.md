@@ -9,6 +9,9 @@ MCP server exposing a curated surface of the [Quickwit](https://quickwit.io) sea
 - `search(index_id, query, start_timestamp?, end_timestamp?, max_hits?, sort_by?)` → hits
 - `parse_query(query, search_fields?)` → parsed query AST
 - `search_plan(index_id, query, start_timestamp?, end_timestamp?, max_hits?, sort_by?)` → execution plan
+- `find_new_error_patterns(index_id, service_query?, window_minutes?, pattern_field?, error_query?, max_hits?, now_timestamp?)` → error types present now but not in previous window
+- `summarize_error_patterns(index_id, service_query?, window_minutes?, pattern_field?, error_query?, top_k?, max_hits?, now_timestamp?)` → top error patterns + deterministic deltas
+- `investigate_service_logs(index_id, service_query, window_minutes?, pattern_field?, error_query?, max_hits?, now_timestamp?)` → deterministic log-based likely cause summary
 
 One server = one Quickwit cluster. Deploy twice (logs + tracing) as separate pods.
 
