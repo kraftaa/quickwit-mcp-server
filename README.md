@@ -4,14 +4,21 @@ MCP server exposing a curated surface of the [Quickwit](https://quickwit.io) sea
 
 ## Tools
 
-- `list_indexes()` → all indexes on the cluster
-- `describe_index(index_id)` → schema, size, doc count, splits
-- `search(index_id, query, start_timestamp?, end_timestamp?, max_hits?, sort_by?)` → hits
-- `parse_query(query, search_fields?)` → parsed query AST
-- `search_plan(index_id, query, start_timestamp?, end_timestamp?, max_hits?, sort_by?)` → execution plan
-- `find_new_error_patterns(index_id, service_query?, window_minutes?, pattern_field?, error_query?, max_hits?, now_timestamp?)` → error types present now but not in previous window
-- `summarize_error_patterns(index_id, service_query?, window_minutes?, pattern_field?, error_query?, top_k?, max_hits?, now_timestamp?)` → top error patterns + deterministic deltas
-- `investigate_service_logs(index_id, service_query, window_minutes?, pattern_field?, error_query?, max_hits?, now_timestamp?)` → deterministic log-based likely cause summary
+| Tool | Description |
+|------|-------------|
+| `list_indexes()` | All indexes on the cluster |
+| `describe_index(index_id)` | Schema, size, doc count, splits |
+| `search(index_id, query, ...)` | Query with optional timestamps, max_hits, sort |
+| `count(index_id, query, ...)` | Hit count without fetching documents |
+| `tail(index_id, n?, query?)` | Most recent N documents from an index |
+| `aggregate(index_id, query, agg_field, ...)` | Top-N term aggregation for a field |
+| `histogram(index_id, query, interval?, ...)` | Time-bucketed hit counts (date_histogram) |
+| `parse_query(query, search_fields?)` | Parsed query AST |
+| `search_plan(index_id, query, ...)` | Execution plan |
+| `find_new_error_patterns(index_id, ...)` | Error types present now but not in previous window |
+| `summarize_error_patterns(index_id, ...)` | Top error patterns + deterministic deltas |
+| `investigate_service_logs(index_id, ...)` | Log-based likely cause summary |
+| `health()` | Connectivity check with latency |
 
 One server = one Quickwit cluster. Deploy twice (logs + tracing) as separate pods.
 
@@ -21,6 +28,8 @@ One server = one Quickwit cluster. Deploy twice (logs + tracing) as separate pod
 |---------|---------|-------------|
 | `QUICKWIT_URL` | `http://localhost:7280` | Quickwit base URL (no trailing `/api/v1`) |
 | `QUICKWIT_HTTP_TIMEOUT` | `30` | HTTP timeout in seconds |
+| `QUICKWIT_MAX_RETRIES` | `3` | Number of connection retries on failure |
+| `QUICKWIT_MCP_LOG_LEVEL` | `INFO` | Log level (DEBUG, INFO, WARNING, ERROR) |
 | `MCP_HOST` | `0.0.0.0` | Bind host |
 | `MCP_PORT` | `3020` | Bind port |
 
@@ -37,6 +46,12 @@ Optional local smoke test (direct Quickwit calls via the same Python request cod
 
 ```bash
 QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index your-index-id --query '*'
+
+# Test aggregations
+QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index otel-logs-v0_7 --query 'severity_text:ERROR' --agg-field service_name
+
+# Test histogram
+QUICKWIT_URL=http://localhost:7280 python smoke_test.py --index otel-logs-v0_7 --query '*' --histogram timestamp_nanos
 ```
 
 ## Deploying
@@ -104,6 +119,9 @@ Then ask your client to call tools like:
 - `list_indexes`
 - `describe_index`
 - `search` with `start_timestamp` / `end_timestamp` for time windows (e.g. last 5 minutes, last 24 hours)
+- `aggregate` to group results by field (e.g. errors by service_name)
+- `histogram` to see error rate over time
+- `health` to check cluster connectivity before running queries
 
 ## Quickwit version support
 
@@ -111,6 +129,7 @@ Written against Quickwit 0.8.x REST API and cross-checked against current 0.9 ma
 - Core `list_indexes`, `describe_index`, and `search` paths remain stable.
 - `/{index}/search/stream` is removed in 0.9 and intentionally not exposed here.
 - `parse-query` and `search-plan` are exposed as optional preflight tools.
+- Aggregations use the Elasticsearch-compatible aggregation syntax supported since 0.7.
 
 ## License
 
