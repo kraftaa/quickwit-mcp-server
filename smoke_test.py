@@ -18,6 +18,12 @@ def _extract_index_id(item: Any) -> str | None:
 
 async def _run(args: argparse.Namespace) -> int:
     try:
+        health_result = await server.health()
+        print(f"health: {health_result['status']} ({health_result.get('latency_ms', '?')}ms)")
+        if health_result["status"] == "unreachable":
+            print(f"  error: {health_result.get('error')}")
+            return 1
+
         indexes = await server.list_indexes()
         print(f"list_indexes: OK ({len(indexes)} indexes)")
 
@@ -62,6 +68,41 @@ async def _run(args: argparse.Namespace) -> int:
         )
         print("search: OK")
         print(json.dumps(result, indent=2)[:2000])
+
+        count_result = await server.count(
+            index_id=index_id,
+            query=args.query,
+            start_timestamp=args.start_timestamp,
+            end_timestamp=args.end_timestamp,
+        )
+        print(f"count: OK ({count_result['num_hits']} hits)")
+
+        tail_result = await server.tail(index_id=index_id, n=3, query=args.query)
+        print(f"tail: OK ({len(server._extract_hits(tail_result))} docs returned)")
+
+        if args.agg_field:
+            agg_result = await server.aggregate(
+                index_id=index_id,
+                query=args.query,
+                agg_field=args.agg_field,
+                start_timestamp=args.start_timestamp,
+                end_timestamp=args.end_timestamp,
+            )
+            print("aggregate: OK")
+            print(json.dumps(agg_result, indent=2)[:2000])
+
+        if args.histogram:
+            hist_result = await server.histogram(
+                index_id=index_id,
+                query=args.query,
+                interval="5m",
+                timestamp_field=args.histogram,
+                start_timestamp=args.start_timestamp,
+                end_timestamp=args.end_timestamp,
+            )
+            print("histogram: OK")
+            print(json.dumps(hist_result, indent=2)[:2000])
+
         return 0
     except Exception as exc:
         print(f"smoke_test failed: {type(exc).__name__}: {exc}", file=sys.stderr)
@@ -80,6 +121,8 @@ def main() -> int:
     parser.add_argument("--sort-by", help="Quickwit sort expression, e.g. -timestamp.")
     parser.add_argument("--start-timestamp", type=int, help="Start timestamp (unix seconds).")
     parser.add_argument("--end-timestamp", type=int, help="End timestamp (unix seconds).")
+    parser.add_argument("--agg-field", help="Field to run term aggregation on (tests aggregate tool).")
+    parser.add_argument("--histogram", metavar="TIMESTAMP_FIELD", help="Timestamp field for histogram test.")
     args = parser.parse_args()
     return asyncio.run(_run(args))
 
