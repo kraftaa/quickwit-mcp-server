@@ -10,7 +10,7 @@ MCP server exposing a curated surface of the [Quickwit](https://quickwit.io) sea
 | `describe_index(index_id)` | Schema, size, doc count, splits |
 | `search(index_id, query, ...)` | Query with optional timestamps, max_hits, sort |
 | `count(index_id, query, ...)` | Hit count without fetching documents |
-| `tail(index_id, n?, query?)` | Most recent N documents from an index |
+| `tail(index_id, n?, query?, sort_by?, timestamp_field?)` | Most recent N documents from an index |
 | `aggregate(index_id, query, agg_field, ...)` | Top-N term aggregation for a field |
 | `histogram(index_id, query, interval?, ...)` | Time-bucketed hit counts (date_histogram) |
 | `parse_query(query, search_fields?)` | Parsed query AST |

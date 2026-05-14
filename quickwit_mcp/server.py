@@ -225,19 +225,23 @@ async def tail(
     n: int = 10,
     query: str = "*",
     sort_by: str | None = None,
+    timestamp_field: str = "timestamp_nanos",
 ) -> dict[str, Any]:
     """Return the most recent N documents from an index, optionally filtered by query.
 
     If `sort_by` is not provided, results are sorted by the index's timestamp
     field descending (most recent first).
     """
+    if n <= 0:
+        raise ValueError("n must be > 0")
+    effective_sort = sort_by if sort_by is not None else f"-{timestamp_field}"
     return await _search_raw(
         index_id=index_id,
         query=query,
         start_timestamp=None,
         end_timestamp=None,
         max_hits=n,
-        sort_by=sort_by,
+        sort_by=effective_sort,
     )
 
 
